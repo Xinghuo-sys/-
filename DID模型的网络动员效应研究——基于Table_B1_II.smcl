@@ -1,0 +1,462 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}D:\Desktop\科研\stata\DID模型的网络动员效应研究——基于Table_B1_II.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}22 Nov 2025, 20:59:09
+
+{com}. cd D:\dektop\科研\stata\stata工作路径
+{err}unable to change to D:\dektop\科研\stata\stata工作路径
+{txt}{search r(170), local:r(170);}
+
+{com}. cd D:\desktop\科研\stata\stata工作路径
+{res}D:\desktop\科研\stata\stata工作路径
+
+{com}. use HunanCntyYr.dta,clear
+
+. gen Post=0 if year<1854
+{txt}(825 missing values generated)
+
+{com}. 
+. replace Post=1 if year>=1854&year<=1864
+{txt}(825 real changes made)
+
+{com}. 
+. 
+. 
+. 
+. 
+. foreach y of varlist Zeng_all0_invdist_pc Zeng_all0_pc Zenghu_all Zenghu_all_invdist  Zeng_all0 Zeng_all0_invdist  Zeng_exam0_invdist  Zeng_BMF_invdist Zeng_Juren_invdist lnarea capital lnurbanpop  lnpop   dist_nanjing lnjinshi lnquotas mainriv route1 dist2canal lnwheat lnrice  {c -(}
+{txt}  2{com}. 
+. gen `y'_Post=`y'*Post
+{txt}  3{com}. 
+. 
+. 
+. {c )-}
+
+. * 观察数据分布，看看网络连接数的分布情况
+
+. 
+. sum Zeng_all0, detai1
+{err}option {bf:detai1} not allowed
+{txt}{search r(198), local:r(198);}
+
+{com}. sum Zeng_all0, detail
+
+      {txt}Elite connections, Baseline networks (unweighted)
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}        0              0
+{txt} 5%    {res}        0              0
+{txt}10%    {res}        0              0       {txt}Obs         {res}      1,125
+{txt}25%    {res}        0              0       {txt}Sum of wgt. {res}      1,125
+
+{txt}50%    {res}        0                      {txt}Mean          {res} 1.746667
+                        {txt}Largest       Std. dev.     {res} 3.707835
+{txt}75%    {res}        2             22
+{txt}90%    {res}        4             22       {txt}Variance      {res} 13.74804
+{txt}95%    {res}        5             22       {txt}Skewness      {res} 4.140098
+{txt}99%    {res}       22             22       {txt}Kurtosis      {res} 21.86303
+
+{com}. *生成"门槛"虚拟变量
+
+. gen Zeng_None = (Zeng_all0 == 0)
+
+. 
+. gen Zeng_Weak = (Zeng_all0 >= 1 & Zeng_all0 <= 2)
+
+. 
+. gen Zeng_Strong = (Zeng_all0 >= 3)
+
+. * 3. 生成交互项 
+
+. 
+. gen Zeng_Weak_Post = Zeng_Weak * Post
+
+. 
+. gen Zeng_Strong_Post = Zeng_Strong * Post
+
+. * 4. 跑回归 (以"无关系"作为基准组，所以不放进去)
+
+. 
+. xi: reghdfe lnmartyr_sine Zeng_Weak_Post Zeng_Strong_Post capital_Post  lnurbanpop_Post  lnjinshi_Post  lnquotas_Post route1_Post  dist_nanjing_Post mainriv_Post dist2canal_Post  lnwheat_Post lnrice_Post lnpop_Post lnarea_Post, absorb(year cntyid) cluster(cntyid)
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 2 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     1,125
+{txt}Absorbing 2 HDFE groups{col 51}F({res}  14{txt},{res}     74{txt}){col 67}= {res}      4.16
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.0000
+{txt}{col 51}R-squared{col 67}= {res}    0.4757
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.4234
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0824
+{txt}{col 1}Number of clusters ({res}cntyid{txt}) {col 30}= {res}        75{txt}{col 51}Root MSE{col 67}= {res}    1.4502
+
+{txt}{ralign 83:(Std. err. adjusted for {res:75} clusters in {res:cntyid})}
+{hline 18}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 19}{c |}{col 31}    Robust
+{col 1}    lnmartyr_sine{col 19}{c |} Coefficient{col 31}  std. err.{col 43}      t{col 51}   P>|t|{col 59}     [95% con{col 72}f. interval]
+{hline 18}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 3}Zeng_Weak_Post {c |}{col 19}{res}{space 2} .3578666{col 31}{space 2} .2739051{col 42}{space 1}    1.31{col 51}{space 3}0.195{col 59}{space 4}-.1879013{col 72}{space 3} .9036345
+{txt}{space 1}Zeng_Strong_Post {c |}{col 19}{res}{space 2} 1.942186{col 31}{space 2} .6972247{col 42}{space 1}    2.79{col 51}{space 3}0.007{col 59}{space 4} .5529351{col 72}{space 3} 3.331436
+{txt}{space 5}capital_Post {c |}{col 19}{res}{space 2} -.436153{col 31}{space 2} .3246462{col 42}{space 1}   -1.34{col 51}{space 3}0.183{col 59}{space 4}-1.083025{col 72}{space 3} .2107187
+{txt}{space 2}lnurbanpop_Post {c |}{col 19}{res}{space 2}-.0766934{col 31}{space 2} .1703705{col 42}{space 1}   -0.45{col 51}{space 3}0.654{col 59}{space 4}-.4161641{col 72}{space 3} .2627773
+{txt}{space 4}lnjinshi_Post {c |}{col 19}{res}{space 2}  .242926{col 31}{space 2} .2292741{col 42}{space 1}    1.06{col 51}{space 3}0.293{col 59}{space 4}-.2139127{col 72}{space 3} .6997647
+{txt}{space 4}lnquotas_Post {c |}{col 19}{res}{space 2} .0331629{col 31}{space 2} .5568882{col 42}{space 1}    0.06{col 51}{space 3}0.953{col 59}{space 4}-1.076461{col 72}{space 3} 1.142787
+{txt}{space 6}route1_Post {c |}{col 19}{res}{space 2} .2845576{col 31}{space 2} .3826627{col 42}{space 1}    0.74{col 51}{space 3}0.459{col 59}{space 4}-.4779144{col 72}{space 3}  1.04703
+{txt}dist_nanjing_Post {c |}{col 19}{res}{space 2}-.3745268{col 31}{space 2} .5709803{col 42}{space 1}   -0.66{col 51}{space 3}0.514{col 59}{space 4} -1.51223{col 72}{space 3} .7631763
+{txt}{space 5}mainriv_Post {c |}{col 19}{res}{space 2}-.2284874{col 31}{space 2} .3223672{col 42}{space 1}   -0.71{col 51}{space 3}0.481{col 59}{space 4}-.8708182{col 72}{space 3} .4138433
+{txt}{space 2}dist2canal_Post {c |}{col 19}{res}{space 2} .3659959{col 31}{space 2} .5175497{col 42}{space 1}    0.71{col 51}{space 3}0.482{col 59}{space 4}-.6652444{col 72}{space 3} 1.397236
+{txt}{space 5}lnwheat_Post {c |}{col 19}{res}{space 2} 4.606454{col 31}{space 2} 1.976109{col 42}{space 1}    2.33{col 51}{space 3}0.022{col 59}{space 4} .6689712{col 72}{space 3} 8.543938
+{txt}{space 6}lnrice_Post {c |}{col 19}{res}{space 2}-3.438908{col 31}{space 2} 1.452166{col 42}{space 1}   -2.37{col 51}{space 3}0.020{col 59}{space 4}-6.332411{col 72}{space 3}-.5454046
+{txt}{space 7}lnpop_Post {c |}{col 19}{res}{space 2} .0060993{col 31}{space 2} .3789736{col 42}{space 1}    0.02{col 51}{space 3}0.987{col 59}{space 4}-.7490222{col 72}{space 3} .7612207
+{txt}{space 6}lnarea_Post {c |}{col 19}{res}{space 2} .4191585{col 31}{space 2}  .328677{col 42}{space 1}    1.28{col 51}{space 3}0.206{col 59}{space 4}-.2357446{col 72}{space 3} 1.074062
+{txt}{space 12}_cons {c |}{col 19}{res}{space 2}-2.412941{col 31}{space 2} 4.783661{col 42}{space 1}   -0.50{col 51}{space 3}0.615{col 59}{space 4}-11.94459{col 72}{space 3} 7.118711
+{txt}{hline 18}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}        year{col 14}{c |}{space 1}       15{col 27}{space 1}        1{col 39}{result}{space 1}       14{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}      cntyid{col 14}{c |}{space 1}       75{col 27}{space 1}       75{col 39}{result}{space 1}        0{col 53}{text}*{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+* = FE nested within cluster; treated as redundant for DoF computation
+{res}
+{com}. sum Zeng_exam0_invdist, detail
+
+     {txt}Elite connections, National-level exam connections
+                         (weighted)
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}        0              0
+{txt} 5%    {res}        0              0
+{txt}10%    {res}        0              0       {txt}Obs         {res}      1,125
+{txt}25%    {res}        0              0       {txt}Sum of wgt. {res}      1,125
+
+{txt}50%    {res}        0                      {txt}Mean          {res} .2933333
+                        {txt}Largest       Std. dev.     {res} .7355972
+{txt}75%    {res}        0              4
+{txt}90%    {res}        1              4       {txt}Variance      {res} .5411032
+{txt}95%    {res}      1.5              4       {txt}Skewness      {res} 3.678827
+{txt}99%    {res}        4              4       {txt}Kurtosis      {res} 17.80647
+
+{com}. 
+. local med_exam = r(p50)
+
+. * 生成交互项
+
+. 
+. gen Zeng_Exam_Post = Zeng_exam0_invdist * Post
+
+. xi: reghdfe lnmartyr_sine Zeng_Exam_Post Zeng_BMF_invdist_Post capital_Post  lnurbanpop_Post  lnjinshi_Post  lnquotas_Post route1_Post  dist_nanjing_Post mainriv_Post dist2canal_Post  lnwheat_Post lnrice_Post lnpop_Post lnarea_Post , absorb(year cntyid) cluster(cntyid)
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 2 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     1,125
+{txt}Absorbing 2 HDFE groups{col 51}F({res}  14{txt},{res}     74{txt}){col 67}= {res}     15.15
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.0000
+{txt}{col 51}R-squared{col 67}= {res}    0.4713
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.4185
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0747
+{txt}{col 1}Number of clusters ({res}cntyid{txt}) {col 30}= {res}        75{txt}{col 51}Root MSE{col 67}= {res}    1.4563
+
+{txt}{ralign 87:(Std. err. adjusted for {res:75} clusters in {res:cntyid})}
+{hline 22}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 23}{c |}{col 35}    Robust
+{col 1}        lnmartyr_sine{col 23}{c |} Coefficient{col 35}  std. err.{col 47}      t{col 55}   P>|t|{col 63}     [95% con{col 76}f. interval]
+{hline 22}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 7}Zeng_Exam_Post {c |}{col 23}{res}{space 2} .3325028{col 35}{space 2} .1716377{col 46}{space 1}    1.94{col 55}{space 3}0.057{col 63}{space 4}-.0094929{col 76}{space 3} .6744984
+{txt}Zeng_BMF_invdist_Post {c |}{col 23}{res}{space 2} .1365354{col 35}{space 2} .0419824{col 46}{space 1}    3.25{col 55}{space 3}0.002{col 63}{space 4} .0528837{col 76}{space 3} .2201871
+{txt}{space 9}capital_Post {c |}{col 23}{res}{space 2} -.393866{col 35}{space 2} .2626569{col 46}{space 1}   -1.50{col 55}{space 3}0.138{col 63}{space 4}-.9172212{col 76}{space 3} .1294892
+{txt}{space 6}lnurbanpop_Post {c |}{col 23}{res}{space 2}  .060234{col 35}{space 2} .1305989{col 46}{space 1}    0.46{col 55}{space 3}0.646{col 63}{space 4}-.1999899{col 76}{space 3} .3204579
+{txt}{space 8}lnjinshi_Post {c |}{col 23}{res}{space 2} .4085922{col 35}{space 2} .1880878{col 46}{space 1}    2.17{col 55}{space 3}0.033{col 63}{space 4} .0338191{col 76}{space 3} .7833653
+{txt}{space 8}lnquotas_Post {c |}{col 23}{res}{space 2}-.2112485{col 35}{space 2} .5330589{col 46}{space 1}   -0.40{col 55}{space 3}0.693{col 63}{space 4}-1.273391{col 76}{space 3} .8508944
+{txt}{space 10}route1_Post {c |}{col 23}{res}{space 2} .0087831{col 35}{space 2} .3902244{col 46}{space 1}    0.02{col 55}{space 3}0.982{col 63}{space 4} -.768756{col 76}{space 3} .7863222
+{txt}{space 4}dist_nanjing_Post {c |}{col 23}{res}{space 2}-.4132716{col 35}{space 2} .6298254{col 46}{space 1}   -0.66{col 55}{space 3}0.514{col 63}{space 4}-1.668226{col 76}{space 3}  .841683
+{txt}{space 9}mainriv_Post {c |}{col 23}{res}{space 2}-.4089521{col 35}{space 2}  .347231{col 46}{space 1}   -1.18{col 55}{space 3}0.243{col 63}{space 4}-1.100825{col 76}{space 3} .2829207
+{txt}{space 6}dist2canal_Post {c |}{col 23}{res}{space 2} .3678391{col 35}{space 2} .5152406{col 46}{space 1}    0.71{col 55}{space 3}0.478{col 63}{space 4}-.6588002{col 76}{space 3} 1.394479
+{txt}{space 9}lnwheat_Post {c |}{col 23}{res}{space 2} 3.311372{col 35}{space 2} 1.860897{col 46}{space 1}    1.78{col 55}{space 3}0.079{col 63}{space 4} -.396546{col 76}{space 3}  7.01929
+{txt}{space 10}lnrice_Post {c |}{col 23}{res}{space 2} -3.22963{col 35}{space 2} 1.543489{col 46}{space 1}   -2.09{col 55}{space 3}0.040{col 63}{space 4}-6.305099{col 76}{space 3}-.1541617
+{txt}{space 11}lnpop_Post {c |}{col 23}{res}{space 2} .0469458{col 35}{space 2} .4188563{col 46}{space 1}    0.11{col 55}{space 3}0.911{col 63}{space 4}-.7876435{col 76}{space 3} .8815351
+{txt}{space 10}lnarea_Post {c |}{col 23}{res}{space 2} .7641557{col 35}{space 2} .3927977{col 46}{space 1}    1.95{col 55}{space 3}0.056{col 63}{space 4}-.0185107{col 76}{space 3} 1.546822
+{txt}{space 16}_cons {c |}{col 23}{res}{space 2}-3.441219{col 35}{space 2}  5.46631{col 46}{space 1}   -0.63{col 55}{space 3}0.531{col 63}{space 4}-14.33308{col 76}{space 3} 7.450642
+{txt}{hline 22}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}        year{col 14}{c |}{space 1}       15{col 27}{space 1}        1{col 39}{result}{space 1}       14{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}      cntyid{col 14}{c |}{space 1}       75{col 27}{space 1}       75{col 39}{result}{space 1}        0{col 53}{text}*{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+* = FE nested within cluster; treated as redundant for DoF computation
+{res}
+{com}. test Zeng_Exam_Post = Zeng_BMF_invdist_Post
+
+{p 0 7}{space 1}{text:( 1)}{space 1} {res}Zeng_Exam_Post - Zeng_BMF_invdist_Post = 0{p_end}
+
+{txt}       F(  1,    74) ={res}    1.29
+{txt}{col 13}Prob > F ={res}    0.2588
+
+{com}. ********************************************************************************
+
+. 
+. *** 扩展复现：同窗网络与本地精英的交互 
+
+. 
+. 
+. 
+. * 1. 确认变量存在 (防止报错)
+
+. 
+. capture gen Zeng_Exam_Post = Zeng_exam0_invdist * Post
+
+. 
+. * lnjinshi 是不随时间变化的，所以需要生成它与 Post 的交互 (lnjinshi_Post 应该已有)
+
+. 
+. 
+. 
+. * 2. 生成三重交互项：同窗网络 * 本地进士密度 * Post
+
+. 
+. * 逻辑：检验同窗网络的效果是否依赖于本地的精英基础
+
+. 
+. gen Zeng_Exam_Local_Post = Zeng_exam0_invdist * lnjinshi * Post
+
+. 
+. 
+. 
+. * 3. 跑回归
+
+. 
+. * 注意：必须包含所有层级的交互项
+
+. 
+. * 核心关注：Zeng_Exam_Local_Post
+
+. 
+. xi: reghdfe lnmartyr_sine Zeng_Exam_Local_Post Zeng_Exam_Post lnjinshi_Post Zeng_BMF_invdist_Post capital_Post lnurbanpop_Post lnquotas_Post route1_Post dist_nanjing_Post mainriv_Post dist2canal_Post lnwheat_Post lnrice_Post lnpop_Post lnarea_Post, absorb(year cntyid) cluster(cntyid)
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 2 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     1,125
+{txt}Absorbing 2 HDFE groups{col 51}F({res}  15{txt},{res}     74{txt}){col 67}= {res}     15.13
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.0000
+{txt}{col 51}R-squared{col 67}= {res}    0.4715
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.4181
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0750
+{txt}{col 1}Number of clusters ({res}cntyid{txt}) {col 30}= {res}        75{txt}{col 51}Root MSE{col 67}= {res}    1.4568
+
+{txt}{ralign 87:(Std. err. adjusted for {res:75} clusters in {res:cntyid})}
+{hline 22}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 23}{c |}{col 35}    Robust
+{col 1}        lnmartyr_sine{col 23}{c |} Coefficient{col 35}  std. err.{col 47}      t{col 55}   P>|t|{col 63}     [95% con{col 76}f. interval]
+{hline 22}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 1}Zeng_Exam_Local_Post {c |}{col 23}{res}{space 2} .1225587{col 35}{space 2} .2232993{col 46}{space 1}    0.55{col 55}{space 3}0.585{col 63}{space 4}-.3223748{col 76}{space 3} .5674923
+{txt}{space 7}Zeng_Exam_Post {c |}{col 23}{res}{space 2}-.0450155{col 35}{space 2} .7211685{col 46}{space 1}   -0.06{col 55}{space 3}0.950{col 63}{space 4}-1.481975{col 76}{space 3} 1.391944
+{txt}{space 8}lnjinshi_Post {c |}{col 23}{res}{space 2}  .400602{col 35}{space 2}  .192292{col 46}{space 1}    2.08{col 55}{space 3}0.041{col 63}{space 4} .0174517{col 76}{space 3} .7837522
+{txt}Zeng_BMF_invdist_Post {c |}{col 23}{res}{space 2} .1371036{col 35}{space 2} .0421027{col 46}{space 1}    3.26{col 55}{space 3}0.002{col 63}{space 4} .0532121{col 76}{space 3} .2209952
+{txt}{space 9}capital_Post {c |}{col 23}{res}{space 2}-.4138034{col 35}{space 2} .2688775{col 46}{space 1}   -1.54{col 55}{space 3}0.128{col 63}{space 4}-.9495535{col 76}{space 3} .1219467
+{txt}{space 6}lnurbanpop_Post {c |}{col 23}{res}{space 2} .0615737{col 35}{space 2} .1310798{col 46}{space 1}    0.47{col 55}{space 3}0.640{col 63}{space 4}-.1996085{col 76}{space 3} .3227558
+{txt}{space 8}lnquotas_Post {c |}{col 23}{res}{space 2}-.1630552{col 35}{space 2} .5492236{col 46}{space 1}   -0.30{col 55}{space 3}0.767{col 63}{space 4}-1.257407{col 76}{space 3} .9312967
+{txt}{space 10}route1_Post {c |}{col 23}{res}{space 2}-.0058691{col 35}{space 2} .3846786{col 46}{space 1}   -0.02{col 55}{space 3}0.988{col 63}{space 4} -.772358{col 76}{space 3} .7606198
+{txt}{space 4}dist_nanjing_Post {c |}{col 23}{res}{space 2}-.4222195{col 35}{space 2} .6287504{col 46}{space 1}   -0.67{col 55}{space 3}0.504{col 63}{space 4}-1.675032{col 76}{space 3}  .830593
+{txt}{space 9}mainriv_Post {c |}{col 23}{res}{space 2}-.4511368{col 35}{space 2} .3409072{col 46}{space 1}   -1.32{col 55}{space 3}0.190{col 63}{space 4}-1.130409{col 76}{space 3} .2281356
+{txt}{space 6}dist2canal_Post {c |}{col 23}{res}{space 2} .3625442{col 35}{space 2} .5198535{col 46}{space 1}    0.70{col 55}{space 3}0.488{col 63}{space 4}-.6732865{col 76}{space 3} 1.398375
+{txt}{space 9}lnwheat_Post {c |}{col 23}{res}{space 2} 3.197629{col 35}{space 2} 1.888071{col 46}{space 1}    1.69{col 55}{space 3}0.095{col 63}{space 4}-.5644352{col 76}{space 3} 6.959694
+{txt}{space 10}lnrice_Post {c |}{col 23}{res}{space 2}-3.302962{col 35}{space 2} 1.529181{col 46}{space 1}   -2.16{col 55}{space 3}0.034{col 63}{space 4}-6.349922{col 76}{space 3}-.2560013
+{txt}{space 11}lnpop_Post {c |}{col 23}{res}{space 2} .0391594{col 35}{space 2} .4200135{col 46}{space 1}    0.09{col 55}{space 3}0.926{col 63}{space 4}-.7977358{col 76}{space 3} .8760547
+{txt}{space 10}lnarea_Post {c |}{col 23}{res}{space 2} .7835225{col 35}{space 2} .3890258{col 46}{space 1}    2.01{col 55}{space 3}0.048{col 63}{space 4} .0083717{col 76}{space 3} 1.558673
+{txt}{space 16}_cons {c |}{col 23}{res}{space 2}-3.235861{col 35}{space 2} 5.456762{col 46}{space 1}   -0.59{col 55}{space 3}0.555{col 63}{space 4} -14.1087{col 76}{space 3} 7.636975
+{txt}{hline 22}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}        year{col 14}{c |}{space 1}       15{col 27}{space 1}        1{col 39}{result}{space 1}       14{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}      cntyid{col 14}{c |}{space 1}       75{col 27}{space 1}       75{col 39}{result}{space 1}        0{col 53}{text}*{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+* = FE nested within cluster; treated as redundant for DoF computation
+{res}
+{com}. ********************************************************************************
+
+. 
+. *** 终极扩展：类型与门槛的交叉检验 
+
+. 
+. 
+. 
+. *** 1. 定义"同窗"的弱/强
+
+. 
+. * 先看分布
+
+. 
+. sum Zeng_exam0_invdist, detail
+
+     {txt}Elite connections, National-level exam connections
+                         (weighted)
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}        0              0
+{txt} 5%    {res}        0              0
+{txt}10%    {res}        0              0       {txt}Obs         {res}      1,125
+{txt}25%    {res}        0              0       {txt}Sum of wgt. {res}      1,125
+
+{txt}50%    {res}        0                      {txt}Mean          {res} .2933333
+                        {txt}Largest       Std. dev.     {res} .7355972
+{txt}75%    {res}        0              4
+{txt}90%    {res}        1              4       {txt}Variance      {res} .5411032
+{txt}95%    {res}      1.5              4       {txt}Skewness      {res} 3.678827
+{txt}99%    {res}        4              4       {txt}Kurtosis      {res} 17.80647
+
+{com}. 
+. local p50_exam = r(p50)
+
+. 
+. local p75_exam = r(p75)
+
+. 
+. 
+. * 定义：
+
+. 
+. * Exam_Weak: 有关系，但强度较低 (比如小于 75 分位)
+
+. 
+. * Exam_Strong: 关系强度很高 (比如大于 75 分位)
+
+. 
+. * 注意：前提是必须 > 0 (0是基准组)
+
+. 
+. gen Exam_Weak   = (Zeng_exam0_invdist > 0 & Zeng_exam0_invdist < `p75_exam')
+
+. 
+. gen Exam_Strong = (Zeng_exam0_invdist >= `p75_exam')
+
+. 
+. 
+. *** 2. 定义"亲戚"的弱/强
+
+. 
+. sum Zeng_BMF_invdist, detail
+
+       {txt}Elite connections, Blood, marriage and friends
+                         (weighted)
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}        0              0
+{txt} 5%    {res}        0              0
+{txt}10%    {res}        0              0       {txt}Obs         {res}      1,125
+{txt}25%    {res}        0              0       {txt}Sum of wgt. {res}      1,125
+
+{txt}50%    {res}        0                      {txt}Mean          {res} .4244444
+                        {txt}Largest       Std. dev.     {res} 1.951422
+{txt}75%    {res}        0           16.5
+{txt}90%    {res}        1           16.5       {txt}Variance      {res} 3.808047
+{txt}95%    {res}        2           16.5       {txt}Skewness      {res} 7.500732
+{txt}99%    {res}     16.5           16.5       {txt}Kurtosis      {res} 61.55561
+
+{com}. 
+. local p50_bmf = r(p50)
+
+. 
+. local p75_bmf = r(p75)
+
+. 
+. 
+. 
+. * 亲戚变量通常比较稀缺，可能很多是0。如果不为0的样本少，直接二分即可。
+
+. 
+. * 假设我们用同样逻辑：
+
+. 
+. gen BMF_Weak   = (Zeng_BMF_invdist > 0 & Zeng_BMF_invdist < `p75_bmf')
+
+. 
+. gen BMF_Strong = (Zeng_BMF_invdist >= `p75_bmf')
+
+. 
+. 
+. 
+. *** 3. 生成交互项 (DID)
+
+. 
+. gen Exam_Weak_Post   = Exam_Weak * Post
+
+. 
+. gen Exam_Strong_Post = Exam_Strong * Post
+
+. 
+. gen BMF_Weak_Post    = BMF_Weak * Post
+
+. 
+. gen BMF_Strong_Post  = BMF_Strong * Post
+
+. 
+. 
+. 
+. *** 4. 跑大乱炖回归
+
+. 
+. * 我们把这 4 个变量都放进去，基准组是"既没亲戚也没同学"
+
+. 
+. xi: reghdfe lnmartyr_sine Exam_Weak_Post Exam_Strong_Post BMF_Weak_Post BMF_Strong_Post capital_Post lnurbanpop_Post lnjinshi_Post lnquotas_Post route1_Post dist_nanjing_Post mainriv_Post dist2canal_Post lnwheat_Post lnrice_Post lnpop_Post lnarea_Post, absorb(year cntyid) cluster(cntyid)
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 2 iterations)
+{res}{txt}note: {res}Exam_Strong_Post{txt} is probably collinear with the fixed effects (all partialled-out values are close to zero; tol = 1.0e-09)
+{txt}note: {res}BMF_Strong_Post{txt} is probably collinear with the fixed effects (all partialled-out values are close to zero; tol = 1.0e-09)
+{res}{txt}note: {res}Exam_Weak_Post{txt} omitted because of collinearity
+{txt}note: {res}Exam_Strong_Post{txt} omitted because of collinearity
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     1,125
+{txt}Absorbing 2 HDFE groups{col 51}F({res}  12{txt},{res}     74{txt}){col 67}= {res}      3.46
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.0005
+{txt}{col 51}R-squared{col 67}= {res}    0.4660
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.4139
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0655
+{txt}{col 1}Number of clusters ({res}cntyid{txt}) {col 30}= {res}        75{txt}{col 51}Root MSE{col 67}= {res}    1.4621
+
+{txt}{ralign 83:(Std. err. adjusted for {res:75} clusters in {res:cntyid})}
+{hline 18}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 19}{c |}{col 31}    Robust
+{col 1}    lnmartyr_sine{col 19}{c |} Coefficient{col 31}  std. err.{col 43}      t{col 51}   P>|t|{col 59}     [95% con{col 72}f. interval]
+{hline 18}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 3}Exam_Weak_Post {c |}{col 19}{res}{space 2}        0{col 31}{txt}  (omitted)
+{space 1}Exam_Strong_Post {c |}{col 19}{res}{space 2}        0{col 31}{txt}  (omitted)
+{space 4}BMF_Weak_Post {c |}{col 19}{res}{space 2}        0{col 31}{txt}  (omitted)
+{space 2}BMF_Strong_Post {c |}{col 19}{res}{space 2}        0{col 31}{txt}  (omitted)
+{space 5}capital_Post {c |}{col 19}{res}{space 2}-.4182836{col 31}{space 2} .2964563{col 42}{space 1}   -1.41{col 51}{space 3}0.162{col 59}{space 4}-1.008986{col 72}{space 3} .1724185
+{txt}{space 2}lnurbanpop_Post {c |}{col 19}{res}{space 2} .1830792{col 31}{space 2} .1292936{col 42}{space 1}    1.42{col 51}{space 3}0.161{col 59}{space 4}-.0745439{col 72}{space 3} .4407023
+{txt}{space 4}lnjinshi_Post {c |}{col 19}{res}{space 2} .5748802{col 31}{space 2} .1712538{col 42}{space 1}    3.36{col 51}{space 3}0.001{col 59}{space 4} .2336495{col 72}{space 3} .9161109
+{txt}{space 4}lnquotas_Post {c |}{col 19}{res}{space 2} -.327311{col 31}{space 2} .5543187{col 42}{space 1}   -0.59{col 51}{space 3}0.557{col 59}{space 4}-1.431815{col 72}{space 3} .7771931
+{txt}{space 6}route1_Post {c |}{col 19}{res}{space 2}-.0066411{col 31}{space 2}  .417316{col 42}{space 1}   -0.02{col 51}{space 3}0.987{col 59}{space 4}-.8381614{col 72}{space 3} .8248791
+{txt}dist_nanjing_Post {c |}{col 19}{res}{space 2}-.4443559{col 31}{space 2}  .644663{col 42}{space 1}   -0.69{col 51}{space 3}0.493{col 59}{space 4}-1.728875{col 72}{space 3} .8401631
+{txt}{space 5}mainriv_Post {c |}{col 19}{res}{space 2}-.6446916{col 31}{space 2} .3576388{col 42}{space 1}   -1.80{col 51}{space 3}0.076{col 59}{space 4}-1.357303{col 72}{space 3} .0679192
+{txt}{space 2}dist2canal_Post {c |}{col 19}{res}{space 2} .3971865{col 31}{space 2} .5290936{col 42}{space 1}    0.75{col 51}{space 3}0.455{col 59}{space 4}-.6570556{col 72}{space 3} 1.451429
+{txt}{space 5}lnwheat_Post {c |}{col 19}{res}{space 2} 3.033695{col 31}{space 2} 1.919692{col 42}{space 1}    1.58{col 51}{space 3}0.118{col 59}{space 4}-.7913753{col 72}{space 3} 6.858765
+{txt}{space 6}lnrice_Post {c |}{col 19}{res}{space 2}-3.470514{col 31}{space 2} 1.594563{col 42}{space 1}   -2.18{col 51}{space 3}0.033{col 59}{space 4} -6.64775{col 72}{space 3}-.2932779
+{txt}{space 7}lnpop_Post {c |}{col 19}{res}{space 2} .0941143{col 31}{space 2} .4317693{col 42}{space 1}    0.22{col 51}{space 3}0.828{col 59}{space 4}-.7662047{col 72}{space 3} .9544334
+{txt}{space 6}lnarea_Post {c |}{col 19}{res}{space 2} .6995639{col 31}{space 2} .3937053{col 42}{space 1}    1.78{col 51}{space 3}0.080{col 59}{space 4}-.0849111{col 72}{space 3} 1.484039
+{txt}{space 12}_cons {c |}{col 19}{res}{space 2}-3.355823{col 31}{space 2} 5.514498{col 42}{space 1}   -0.61{col 51}{space 3}0.545{col 59}{space 4} -14.3437{col 72}{space 3} 7.632055
+{txt}{hline 18}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}        year{col 14}{c |}{space 1}       15{col 27}{space 1}        1{col 39}{result}{space 1}       14{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}      cntyid{col 14}{c |}{space 1}       75{col 27}{space 1}       75{col 39}{result}{space 1}        0{col 53}{text}*{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+* = FE nested within cluster; treated as redundant for DoF computation
+{res}
+{com}. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}D:\Desktop\科研\stata\DID模型的网络动员效应研究——基于Table_B1_II.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}22 Nov 2025, 21:55:19
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}
