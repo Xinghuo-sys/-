@@ -1,0 +1,185 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}D:\Desktop\科研\stata\DID模型的显著性——基于Table_B1_4.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}23 Nov 2025, 09:58:49
+
+{com}. cd D:\desktop\科研\stata\stata工作路径
+{res}D:\desktop\科研\stata\stata工作路径
+
+{com}. use HunanCntyYr.dta,clear
+
+. gen Post=0 if year<1854
+{txt}(825 missing values generated)
+
+{com}. 
+. replace Post=1 if year>=1854&year<=1864
+{txt}(825 real changes made)
+
+{com}. 
+. 
+. 
+. 
+. 
+. 
+. 
+. foreach y of varlist Zeng_all0_invdist_pc Zeng_all0_pc Zenghu_all Zenghu_all_invdist  Zeng_all0 Zeng_all0_invdist  Zeng_exam0_invdist  Zeng_BMF_invdist Zeng_Juren_invdist invdist0_L1 invdist0_F1 lnarea capital lnurbanpop  lnpop  dist_nanjing lnjinshi lnquotas mainriv route1 dist2canal lnwheat lnrice dist_xiangxiang LangSimilarity{c -(}
+{txt}  2{com}. 
+. gen `y'_Post=`y'*Post
+{txt}  3{com}. 
+. 
+. 
+. {c )-}
+
+. egen  prefidXyear=group(prefid year)
+
+. *经济禀赋（如水稻适宜度/是否有大河流） 是否会调节"精英网络"的作用。
+
+. *假设用lnrice来衡量富裕程度
+
+. gen Zeng_a110_RICE_Post=Zeng_all0_invdist_Post*lnrice
+
+. * 2. 运行异质性回归
+
+. 
+. reghdfe lnmartyr1 Zeng_all0_invdist_Post lnrice_Post Hetero_Rice capital_Post lnurbanpop_Post lnjinshi_Post lnquotas_Post route1_Post dist_nanjing_Post mainriv_Post dist2canal_Post dist_xiangxiang_Post, absorb(year cntyid prefidXyear) cluster(cntyid)
+{res}{err}variable {bf}Hetero_Rice{sf} not found
+{txt}{search r(111), local:r(111);}
+
+{com}. reghdfe lnmartyr1 Zeng_all0_invdist_Post lnrice_Post Zeng_a110_RICE_Post capital_Post lnurbanpop_Post lnjinshi_Post lnquotas_Post route1_Post dist_nanjing_Post mainriv_Post dist2canal_Post dist_xiangxiang_Post, absorb(year cntyid prefidXyear) cluster(cntyid)
+{res}{txt}(dropped 15 {browse "http://scorreia.com/research/singletons.pdf":singleton observations})
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 2 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     1,110
+{txt}Absorbing 3 HDFE groups{col 51}F({res}  12{txt},{res}     73{txt}){col 67}= {res}      3.51
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.0004
+{txt}{col 51}R-squared{col 67}= {res}    0.6618
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.5398
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0941
+{txt}{col 1}Number of clusters ({res}cntyid{txt}) {col 30}= {res}        74{txt}{col 51}Root MSE{col 67}= {res}    1.1202
+
+{txt}{ralign 88:(Std. err. adjusted for {res:74} clusters in {res:cntyid})}
+{hline 23}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 24}{c |}{col 36}    Robust
+{col 1}             lnmartyr1{col 24}{c |} Coefficient{col 36}  std. err.{col 48}      t{col 56}   P>|t|{col 64}     [95% con{col 77}f. interval]
+{hline 23}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+Zeng_all0_invdist_Post {c |}{col 24}{res}{space 2}-.0655631{col 36}{space 2} 1.373633{col 47}{space 1}   -0.05{col 56}{space 3}0.962{col 64}{space 4} -2.80321{col 77}{space 3} 2.672084
+{txt}{space 11}lnrice_Post {c |}{col 24}{res}{space 2} -2.70382{col 36}{space 2} 1.733054{col 47}{space 1}   -1.56{col 56}{space 3}0.123{col 64}{space 4}-6.157792{col 77}{space 3} .7501524
+{txt}{space 3}Zeng_a110_RICE_Post {c |}{col 24}{res}{space 2} .1709031{col 36}{space 2} .8066916{col 47}{space 1}    0.21{col 56}{space 3}0.833{col 64}{space 4}-1.436831{col 77}{space 3} 1.778637
+{txt}{space 10}capital_Post {c |}{col 24}{res}{space 2}-1.312193{col 36}{space 2} .4923386{col 47}{space 1}   -2.67{col 56}{space 3}0.009{col 64}{space 4}-2.293422{col 77}{space 3}-.3309634
+{txt}{space 7}lnurbanpop_Post {c |}{col 24}{res}{space 2} .5019367{col 36}{space 2} .1498535{col 47}{space 1}    3.35{col 56}{space 3}0.001{col 64}{space 4} .2032791{col 77}{space 3} .8005943
+{txt}{space 9}lnjinshi_Post {c |}{col 24}{res}{space 2} .2260692{col 36}{space 2} .1594152{col 47}{space 1}    1.42{col 56}{space 3}0.160{col 64}{space 4}-.0916448{col 77}{space 3} .5437833
+{txt}{space 9}lnquotas_Post {c |}{col 24}{res}{space 2}-.8032868{col 36}{space 2} .4239964{col 47}{space 1}   -1.89{col 56}{space 3}0.062{col 64}{space 4} -1.64831{col 77}{space 3} .0417369
+{txt}{space 11}route1_Post {c |}{col 24}{res}{space 2}-.3485352{col 36}{space 2} .3305312{col 47}{space 1}   -1.05{col 56}{space 3}0.295{col 64}{space 4}-1.007283{col 77}{space 3} .3102126
+{txt}{space 5}dist_nanjing_Post {c |}{col 24}{res}{space 2}-.5272273{col 36}{space 2} 1.384756{col 47}{space 1}   -0.38{col 56}{space 3}0.705{col 64}{space 4}-3.287042{col 77}{space 3} 2.232587
+{txt}{space 10}mainriv_Post {c |}{col 24}{res}{space 2}-.6829115{col 36}{space 2} .3232786{col 47}{space 1}   -2.11{col 56}{space 3}0.038{col 64}{space 4}-1.327205{col 77}{space 3}-.0386182
+{txt}{space 7}dist2canal_Post {c |}{col 24}{res}{space 2}-.2697312{col 36}{space 2} 1.302233{col 47}{space 1}   -0.21{col 56}{space 3}0.836{col 64}{space 4}-2.865077{col 77}{space 3} 2.325615
+{txt}{space 2}dist_xiangxiang_Post {c |}{col 24}{res}{space 2}-.0047666{col 36}{space 2} .0051143{col 47}{space 1}   -0.93{col 56}{space 3}0.354{col 64}{space 4}-.0149594{col 77}{space 3} .0054262
+{txt}{space 17}_cons {c |}{col 24}{res}{space 2} 8.631473{col 36}{space 2} 3.230746{col 47}{space 1}    2.67{col 56}{space 3}0.009{col 64}{space 4} 2.192605{col 77}{space 3} 15.07034
+{txt}{hline 23}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}        year{col 14}{c |}{space 1}       15{col 27}{space 1}        1{col 39}{result}{space 1}       14{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}      cntyid{col 14}{c |}{space 1}       74{col 27}{space 1}       74{col 39}{result}{space 1}        0{col 53}{text}*{col 54}{c |}
+{res}{col 1}{text} prefidXyear{col 14}{c |}{space 1}      210{col 27}{space 1}       15{col 39}{result}{space 1}      195{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+* = FE nested within cluster; treated as redundant for DoF computation
+{res}
+{com}. gen Hetero_Quota = Zeng_all0_invdist_Post * lnquotas
+
+. reghdfe lnmartyr1 Zeng_all0_invdist_Post lnrice_Post Zeng_a110_RICE_Post capital_Post lnurbanpop_Post lnjinshi_Post lnquotas_Post route1_Post dist_nanjing_Post mainriv_Post dist2canal_Post dist_xiangxiang_Post, absorb(year cntyid prefidXyear) cluster(cntyid)
+{res}{txt}(dropped 15 {browse "http://scorreia.com/research/singletons.pdf":singleton observations})
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 2 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     1,110
+{txt}Absorbing 3 HDFE groups{col 51}F({res}  12{txt},{res}     73{txt}){col 67}= {res}      3.51
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.0004
+{txt}{col 51}R-squared{col 67}= {res}    0.6618
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.5398
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0941
+{txt}{col 1}Number of clusters ({res}cntyid{txt}) {col 30}= {res}        74{txt}{col 51}Root MSE{col 67}= {res}    1.1202
+
+{txt}{ralign 88:(Std. err. adjusted for {res:74} clusters in {res:cntyid})}
+{hline 23}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 24}{c |}{col 36}    Robust
+{col 1}             lnmartyr1{col 24}{c |} Coefficient{col 36}  std. err.{col 48}      t{col 56}   P>|t|{col 64}     [95% con{col 77}f. interval]
+{hline 23}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+Zeng_all0_invdist_Post {c |}{col 24}{res}{space 2}-.0655631{col 36}{space 2} 1.373633{col 47}{space 1}   -0.05{col 56}{space 3}0.962{col 64}{space 4} -2.80321{col 77}{space 3} 2.672084
+{txt}{space 11}lnrice_Post {c |}{col 24}{res}{space 2} -2.70382{col 36}{space 2} 1.733054{col 47}{space 1}   -1.56{col 56}{space 3}0.123{col 64}{space 4}-6.157792{col 77}{space 3} .7501524
+{txt}{space 3}Zeng_a110_RICE_Post {c |}{col 24}{res}{space 2} .1709031{col 36}{space 2} .8066916{col 47}{space 1}    0.21{col 56}{space 3}0.833{col 64}{space 4}-1.436831{col 77}{space 3} 1.778637
+{txt}{space 10}capital_Post {c |}{col 24}{res}{space 2}-1.312193{col 36}{space 2} .4923386{col 47}{space 1}   -2.67{col 56}{space 3}0.009{col 64}{space 4}-2.293422{col 77}{space 3}-.3309634
+{txt}{space 7}lnurbanpop_Post {c |}{col 24}{res}{space 2} .5019367{col 36}{space 2} .1498535{col 47}{space 1}    3.35{col 56}{space 3}0.001{col 64}{space 4} .2032791{col 77}{space 3} .8005943
+{txt}{space 9}lnjinshi_Post {c |}{col 24}{res}{space 2} .2260692{col 36}{space 2} .1594152{col 47}{space 1}    1.42{col 56}{space 3}0.160{col 64}{space 4}-.0916448{col 77}{space 3} .5437833
+{txt}{space 9}lnquotas_Post {c |}{col 24}{res}{space 2}-.8032868{col 36}{space 2} .4239964{col 47}{space 1}   -1.89{col 56}{space 3}0.062{col 64}{space 4} -1.64831{col 77}{space 3} .0417369
+{txt}{space 11}route1_Post {c |}{col 24}{res}{space 2}-.3485352{col 36}{space 2} .3305312{col 47}{space 1}   -1.05{col 56}{space 3}0.295{col 64}{space 4}-1.007283{col 77}{space 3} .3102126
+{txt}{space 5}dist_nanjing_Post {c |}{col 24}{res}{space 2}-.5272273{col 36}{space 2} 1.384756{col 47}{space 1}   -0.38{col 56}{space 3}0.705{col 64}{space 4}-3.287042{col 77}{space 3} 2.232587
+{txt}{space 10}mainriv_Post {c |}{col 24}{res}{space 2}-.6829115{col 36}{space 2} .3232786{col 47}{space 1}   -2.11{col 56}{space 3}0.038{col 64}{space 4}-1.327205{col 77}{space 3}-.0386182
+{txt}{space 7}dist2canal_Post {c |}{col 24}{res}{space 2}-.2697312{col 36}{space 2} 1.302233{col 47}{space 1}   -0.21{col 56}{space 3}0.836{col 64}{space 4}-2.865077{col 77}{space 3} 2.325615
+{txt}{space 2}dist_xiangxiang_Post {c |}{col 24}{res}{space 2}-.0047666{col 36}{space 2} .0051143{col 47}{space 1}   -0.93{col 56}{space 3}0.354{col 64}{space 4}-.0149594{col 77}{space 3} .0054262
+{txt}{space 17}_cons {c |}{col 24}{res}{space 2} 8.631473{col 36}{space 2} 3.230746{col 47}{space 1}    2.67{col 56}{space 3}0.009{col 64}{space 4} 2.192605{col 77}{space 3} 15.07034
+{txt}{hline 23}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}        year{col 14}{c |}{space 1}       15{col 27}{space 1}        1{col 39}{result}{space 1}       14{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}      cntyid{col 14}{c |}{space 1}       74{col 27}{space 1}       74{col 39}{result}{space 1}        0{col 53}{text}*{col 54}{c |}
+{res}{col 1}{text} prefidXyear{col 14}{c |}{space 1}      210{col 27}{space 1}       15{col 39}{result}{space 1}      195{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+* = FE nested within cluster; treated as redundant for DoF computation
+{res}
+{com}. reghdfe lnmartyr1 Zeng_all0_invdist_Post lnrice_Post Hetero_Quota capital_Post lnurbanpop_Post lnjinshi_Post lnquotas_Post route1_Post dist_nanjing_Post mainriv_Post dist2canal_Post dist_xiangxiang_Post, absorb(year cntyid prefidXyear) cluster(cntyid)
+{res}{txt}(dropped 15 {browse "http://scorreia.com/research/singletons.pdf":singleton observations})
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 2 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     1,110
+{txt}Absorbing 3 HDFE groups{col 51}F({res}  12{txt},{res}     73{txt}){col 67}= {res}      4.53
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.0000
+{txt}{col 51}R-squared{col 67}= {res}    0.6672
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.5471
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.1085
+{txt}{col 1}Number of clusters ({res}cntyid{txt}) {col 30}= {res}        74{txt}{col 51}Root MSE{col 67}= {res}    1.1113
+
+{txt}{ralign 88:(Std. err. adjusted for {res:74} clusters in {res:cntyid})}
+{hline 23}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 24}{c |}{col 36}    Robust
+{col 1}             lnmartyr1{col 24}{c |} Coefficient{col 36}  std. err.{col 48}      t{col 56}   P>|t|{col 64}     [95% con{col 77}f. interval]
+{hline 23}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+Zeng_all0_invdist_Post {c |}{col 24}{res}{space 2} 2.845301{col 36}{space 2} .9306236{col 47}{space 1}    3.06{col 56}{space 3}0.003{col 64}{space 4}  .990571{col 77}{space 3} 4.700031
+{txt}{space 11}lnrice_Post {c |}{col 24}{res}{space 2}-2.067078{col 36}{space 2} 1.580941{col 47}{space 1}   -1.31{col 56}{space 3}0.195{col 64}{space 4} -5.21789{col 77}{space 3} 1.083733
+{txt}{space 10}Hetero_Quota {c |}{col 24}{res}{space 2}-.8742401{col 36}{space 2} .3101916{col 47}{space 1}   -2.82{col 56}{space 3}0.006{col 64}{space 4}-1.492451{col 77}{space 3}-.2560292
+{txt}{space 10}capital_Post {c |}{col 24}{res}{space 2} -1.47067{col 36}{space 2} .4210871{col 47}{space 1}   -3.49{col 56}{space 3}0.001{col 64}{space 4}-2.309896{col 77}{space 3}-.6314449
+{txt}{space 7}lnurbanpop_Post {c |}{col 24}{res}{space 2} .5263468{col 36}{space 2} .1566982{col 47}{space 1}    3.36{col 56}{space 3}0.001{col 64}{space 4} .2140478{col 77}{space 3} .8386458
+{txt}{space 9}lnjinshi_Post {c |}{col 24}{res}{space 2} .2239479{col 36}{space 2} .1675206{col 47}{space 1}    1.34{col 56}{space 3}0.185{col 64}{space 4}-.1099202{col 77}{space 3}  .557816
+{txt}{space 9}lnquotas_Post {c |}{col 24}{res}{space 2}-.3648128{col 36}{space 2} .4069268{col 47}{space 1}   -0.90{col 56}{space 3}0.373{col 64}{space 4}-1.175817{col 77}{space 3} .4461912
+{txt}{space 11}route1_Post {c |}{col 24}{res}{space 2}-.1820451{col 36}{space 2} .2588717{col 47}{space 1}   -0.70{col 56}{space 3}0.484{col 64}{space 4}-.6979757{col 77}{space 3} .3338855
+{txt}{space 5}dist_nanjing_Post {c |}{col 24}{res}{space 2}-.0825893{col 36}{space 2} 1.140753{col 47}{space 1}   -0.07{col 56}{space 3}0.942{col 64}{space 4}-2.356107{col 77}{space 3} 2.190928
+{txt}{space 10}mainriv_Post {c |}{col 24}{res}{space 2}-.5347064{col 36}{space 2} .2896824{col 47}{space 1}   -1.85{col 56}{space 3}0.069{col 64}{space 4}-1.112043{col 77}{space 3} .0426297
+{txt}{space 7}dist2canal_Post {c |}{col 24}{res}{space 2}-.9148822{col 36}{space 2} 1.182643{col 47}{space 1}   -0.77{col 56}{space 3}0.442{col 64}{space 4}-3.271886{col 77}{space 3} 1.442121
+{txt}{space 2}dist_xiangxiang_Post {c |}{col 24}{res}{space 2}-.0012817{col 36}{space 2} .0037214{col 47}{space 1}   -0.34{col 56}{space 3}0.732{col 64}{space 4}-.0086984{col 77}{space 3} .0061349
+{txt}{space 17}_cons {c |}{col 24}{res}{space 2} 7.516586{col 36}{space 2} 2.745302{col 47}{space 1}    2.74{col 56}{space 3}0.008{col 64}{space 4} 2.045206{col 77}{space 3} 12.98797
+{txt}{hline 23}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}        year{col 14}{c |}{space 1}       15{col 27}{space 1}        1{col 39}{result}{space 1}       14{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}      cntyid{col 14}{c |}{space 1}       74{col 27}{space 1}       74{col 39}{result}{space 1}        0{col 53}{text}*{col 54}{c |}
+{res}{col 1}{text} prefidXyear{col 14}{c |}{space 1}      210{col 27}{space 1}       15{col 39}{result}{space 1}      195{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+* = FE nested within cluster; treated as redundant for DoF computation
+{res}
+{com}. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}D:\Desktop\科研\stata\DID模型的显著性——基于Table_B1_4.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}23 Nov 2025, 11:28:56
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}
